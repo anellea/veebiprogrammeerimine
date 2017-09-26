@@ -1,5 +1,7 @@
 <?php
+	require("../../../config.php");
 
+	
 	$loginEmail = "";
 	
 	$signupFirstName = "";
@@ -11,7 +13,12 @@
 	$signupBirthYear = null;
 	$signupBirthDate = null;
 
-	$loginEmail = "";
+	$signupFirstNameError = "";
+	$signupFamilyNameError = "";
+	$signupEmailError = "";
+	$signupGenderError ="";
+	$signupEmailError ="";
+	$signupPasswordError = "";
 	
 	//kas on kasutajanimi sisestatud
 	if (isset ($_POST["loginEmail"])){
@@ -31,9 +38,42 @@
 		}
 	}
 	
+	//Kas on sünni kuupäev määratud
+	if (isset ($_POST["signupBirthDay"])){
+		$signupBirthDay = $_POST["signupBirthDay"];
+		//echo $signupBirthDay;
+	}
+	
+	
 	//Kas kuu määratud
 	if (isset ($_POST["signupBirthMonth"])){
 		$signupBirthMonth = intval($_POST["signupBirthMonth"]);
+	}
+	
+	//kas on sünni aasta määratud
+	
+	if (isset ($_POST["signupBirthMonth"])){
+		$signupBirthMonth = $_POST["signupBirthMonth"];
+		//echo $signupBirthMonth;
+	}
+	
+	
+	//kontrollin, kas kuupäev on valiidne
+	if (isset($_POST["signupBirthDay"]) and isset($_POST["signupBirthMonth"]) and isset ($_POST["signupBirthYear"])){
+		if(checkdate(intval($_POST["signupBirthMonth"]), intval($_POST["signupBirthDay"]), intval($_POST["signupBirthMonth"]))){
+				$birthDate = date_create($_POST["signupBirthMonth"] ."/" .($_POST["signupBirthDay"] ."/" .($_POST["signupBirthYear"])));
+				$signupBirthDate = date_format($birthDate, "Y-m-d");
+				echo $signupBirthDate;
+		}
+	}
+	
+	//kontrollime, kas kirjutati eesnimi
+	if (isset ($_POST["signupFirstName"])){
+		if (empty ($_POST["signupFirstName"])){
+			$signupFirstNameError ="NB! Väli on kohustuslik!";
+		} else {
+			$signupFirstName = $_POST["signupFirstName"];
+		}
 	}
 	
 	//kontrollime, kas kirjutati perekonnanimi
@@ -72,6 +112,47 @@
 			//$signupGenderError = " (Palun vali sobiv!) Määramata!";
 	}
 	
+	//UUE KASUTAJA ANDMEBAASI LISAMINE
+	if (empty($signupFirstNameError) and empty($signupFamilyNameError) and empty($signupEmailError) and empty ($signupGenderError) and empty ($signupEmailError) and empty ($signupPasswordError) and !empty($signupBirthYear)){
+		echo "Hakkan kasutajat salvestama";
+		
+		$signupPassword = hash("sha512", $_POST["signupPassword"]);
+		//loome ühenduse serveriga
+		$database = "if17_anelle";
+		$mysqli = new mysqli($serverHost, $serverUsername, $serverPassword, $database);
+		//käsk serverile	stmt - statement
+		$stmt = $mysqli->prepare("INSERT INTO vpusers (firstname, lastname, birthday, gender, email, password) VALUES (?, ?, ?, ?, ?, ?)");
+		echo $mysqli->error;
+		//seome õiged andmed
+		//s - string e tekst
+		//i - integer e täisarv
+		//d - decimal e ujuvkomaarv
+		$stmt->bind_param("sssiss", $signupFirstName, $signupFamilyName, $signupBirthDate, $gender, $signupEmail, $signupPassword);
+		// $stmt->execute();
+		if($stmt->execute()){
+			echo "Õnnestustki";
+		} else {
+			echo "Tekkis viga: " .$stmt->error;
+		}
+		$stmt->close();
+		$mysqli->close();
+	}
+	
+	//Tekitame kuupäeva valiku
+	$signupDaySelectHTML = "";
+	$signupDaySelectHTML .= '<select name="signupBirthDay">' ."\n";
+	$signupDaySelectHTML .= '<option value="" selected disabled>päev</option>' ."\n";
+	for ($i = 1; $i < 32; $i ++){
+		if($i == $signupBirthDay){
+			$signupDaySelectHTML .= '<option value="' .$i .'" selected>' .$i .'</option>' ."\n";
+		} else {
+			$signupDaySelectHTML .= '<option value="' .$i .'">' .$i .'</option>' ." \n";
+		}
+		
+	}
+	$signupDaySelectHTML.= "</select> \n";
+	
+	
 	//tekitame sünnikuu valiku
 	$monthNamesEt = ["jaanuar", "veebruar", "märts", "aprill", "mai", "juuni", "juuli", "august", "september", "oktoober", "november", "detsember"];
 	$signupMonthSelectHTML = "";
@@ -85,6 +166,22 @@
 		}
 	}
 	$signupMonthSelectHTML .= "</select> \n";
+	
+	//Tekitame aasta valiku
+	$signupYearSelectHTML = "";
+	$signupYearSelectHTML .= '<select name="signupBirthYear">' ."\n";
+	$signupYearSelectHTML .= '<option value="" selected disabled>aasta</option>' ."\n";
+	$yearNow = date("Y");
+	for ($i = $yearNow; $i > 1900; $i --){
+		if($i == $signupBirthYear){
+			$signupYearSelectHTML .= '<option value="' .$i .'" selected>' .$i .'</option>' ."\n";
+		} else {
+			$signupYearSelectHTML .= '<option value="' .$i .'">' .$i .'</option>' ."\n";
+		}
+		
+	}
+	$signupYearSelectHTML.= "</select> \n";
+	
 ?>
 
 <!DOCTYPE html>
@@ -112,13 +209,14 @@
 	<form method="POST">
 		<label>Eesnimi </label>
 		<input name="signupFirstName" type="text" value="<?php echo $signupFirstName; ?>">
+		<span><?php echo $signupFirstNameError; ?></span>
 		<br>
 		<label>Perekonnanimi </label>
 		<input name="signupFamilyName" type="text" value="<?php echo $signupFamilyName; ?>">
 		<br>
 		<label>Palun määra oma sünnikuupäev: </label>
 		<?php
-			echo $signupMonthSelectHTML;
+			echo $signupDaySelectHTML .$signupMonthSelectHTML .$signupYearSelectHTML;
 		?>
 		<br><br>
 		<label>Sugu</label><span>
