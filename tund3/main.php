@@ -6,12 +6,6 @@
 		header("Location: Login.php");
 		exit();
 	}
-	
-	//väljalogimine
-	if(isset($_GET["logout"]))
-		session_destroy();
-		header("Location: login.php");
-		exit();
 
 	$picsDir= "../../pildid/";
 	$picFileTypes = ["jpg", "jpeg", "png", "gif"];
@@ -45,7 +39,6 @@
 <body>
     <h1>Foto</h1>
     <p>See leht on loodud õppetöö raames ning ei sisalda mingit tõsiselt võetavat sisu.</p>
-	<p><a href="?logout=1" >Logi välja!</a></p>
 	<img src="<?php echo $picsDir .$picFile; ?>" alt="Tallinna Ülikool" > //
 
 </body>	
