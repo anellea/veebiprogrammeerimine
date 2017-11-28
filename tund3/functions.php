@@ -1,12 +1,15 @@
 <?php
 	$database = "if17_anelle";
 	
+	//alustan sessiooni
+	session_start();
+	
 	//sisselogimise funktsioon
 	function signIn($email, $password){
 		$notice = "";
-		//andmebaasi Ã¼hendus
-		$mysqli = new mysql($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
-		$stmt = $mysqli ->prepare("SELECT id, email, password FROM vpusers WHERE email ? ?");
+		//andmebaasi ühendus
+		$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
+		$stmt = $mysqli->prepare("SELECT id, email, password FROM vp3users WHERE email = ?");
 		$stmt->bind_param("s", $email);
 		$stmt->bind_result($id, $emailFromDb, $passwordFromDb);
 		$stmt->execute();
@@ -14,33 +17,34 @@
 		//kontrollin vastavust
 		if($stmt->fetch()){
 			$hash = hash("sha512", $password);
-			if($hash == $emailFromDb){
-				$notice = "KÃµik Ãµige! Logisid sisse!";
+			if($hash == $passwordFromDb){
+				$notice = "Kõik õige! Logisite sisse!";
+				
+				//määrame sessioonimuutujad
+				$_SESSION["userId"] = $id;
+				$_SESSION["userEmail"] = $emailFromDb;
+				
 				//liigume pealehele
 				header("Location: main.php");
 				exit();
 			} else {
-				$notice = "Vale salasÃµna!!!";
+				$notice = "Vale salasõna!";
 			}
 		} else {
-			$notice = "Sellist kasutajat (" .$email .") ei leitud";
+			$notice = "Sellist kasutajat (" .$email .") ei leitud!";
 		}
-	
-	$stmt->close();
-	$mysqli->close();
-	return $notice;
+		$stmt->close();
+		$mysqli->close();
+		return $notice;
 	}
-	
-	
-
 	
 	//kasutaja andmebaasi salvestamine
 	function signUp($signupFirstName, $signupFamilyName, $signupBirthDate, $gender, $signupEmail, $signupPassword){
-		//loome andmebaasiÃ¼henduse
+		//loome andmebaasiühenduse
 		
 		$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
-		//valmistame ette kÃ¤su andmebaasiserverile
-		$stmt = $mysqli->prepare("INSERT INTO vpusers (firstname, lastname, birthday, gender, email, password) VALUES (?, ?, ?, ?, ?, ?)");
+		//valmistame ette käsu andmebaasiserverile
+		$stmt = $mysqli->prepare("INSERT INTO vp3users (firstname, lastname, birthday, gender, email, password) VALUES (?, ?, ?, ?, ?, ?)");
 		echo $mysqli->error;
 		//s - string
 		//i - integer
@@ -48,7 +52,7 @@
 		$stmt->bind_param("sssiss", $signupFirstName, $signupFamilyName, $signupBirthDate, $gender, $signupEmail, $signupPassword);
 		//$stmt->execute();
 		if ($stmt->execute()){
-			echo "\n Ã•nnestus!";
+			echo "\n Õnnestus!";
 		} else {
 			echo "\n Tekkis viga : " .$stmt->error;
 		}
@@ -58,9 +62,9 @@
 	
 	//sisestuse testimise funktsioon
 	function test_input($data){
-		$data = trim($data);//eemaldab lÃµpust tÃ¼hikud, TAB jne
+		$data = trim($data);//eemaldab lõpust tühikud, TAB jne
 		$data = stripcslashes($data);//eemaldab "\"
-		$data = htmlspecialchars($data); //eemaldab keelatud mÃ¤rgid
+		$data = htmlspecialchars($data); //eemaldab keelatud märgid
 		return $data;
 	}
 	
@@ -77,4 +81,3 @@
 		echo "Neljas summa on: " .($a + $b);
 	}
 	echo "Viies summa on: " .($a + $b);*/
-?>

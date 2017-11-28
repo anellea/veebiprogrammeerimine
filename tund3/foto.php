@@ -13,7 +13,7 @@
 		header("Location: login.php");
 		exit();
 
-	$picsDir= "../../pildid/";
+	$picsDir= "../pildid/";
 	$picFileTypes = ["jpg", "jpeg", "png", "gif"];
 	$picFiles = []; //massiiv
 	

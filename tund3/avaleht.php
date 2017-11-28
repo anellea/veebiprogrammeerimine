@@ -1,5 +1,5 @@
 <?php
-	$picsDir= "../..//pildid/";
+	$picsDir= "../pildid/";
 	
 	$picFiles = [];
 	
@@ -17,8 +17,8 @@
            <title>Anelle Avaste veebiprogrammeerimine</title>
 </head>
 <body>
-    <h1>Avaleht</h1>
-    <p>See leht on loodud õppetöö raames ning ei sisalda mingit tõsiselt võetavat sisu.</p>
+   
+   <p>See leht on loodud õppetöö raames ning ei sisalda mingit tõsiselt võetavat sisu.</p>
 
 <body>
 	<h2> Minust </h2>

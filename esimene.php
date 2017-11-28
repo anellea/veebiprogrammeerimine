@@ -81,7 +81,7 @@
 	<?php
 		echo "<p>See on esimene jupp PHP abil väljastatud teksti!</p>"; 
 		echo "<p>Täna on ";
-		echo date("d. ") . $monthNow .date(" Y") .", kell lehe avamisel oli" . date("H:i:s");
+		echo date("d. ") . $monthNow .date(" Y") .", kell lehe avamisel oli " . date("H:i:s");
 		echo ", käes on " . $partOfDay.".</p>";
 	?>
 	
