@@ -1,5 +1,5 @@
 <?php
-	require("../../../tund6.php");
+	require("../../../config.php");
 	$database = "if17_anelle";
 	
 	//alustan sessiooni
@@ -66,7 +66,7 @@
 	function saveIdea($idea, $color){
 		$notice = "";
 		$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
-		$stmt = $mysqli->prepare("INSERT INTO vpuserideas (userid, idea, color) VALUES(?, ?, ?)");
+		$stmt = $mysqli->prepare("INSERT INTO vpuserideas (userId, idea, color) VALUES(?, ?, ?)");
 		echo $mysqli->error;
 		$stmt->bind_param("iss", $_SESSION["userId"], $idea, $color);
 		if($stmt->execute()){
@@ -83,13 +83,15 @@
 		$ideasHTML = "";
 		$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
 		//$stmt = $mysqli->prepare("SELECT idea, color FROM vpuserideas");
-		//$stmt = $mysqli->prepare("SELECT idea, color FROM vpuserideas WHERE userid = ?");
-		$stmt = $mysqli->prepare("SELECT idea, color FROM vpuserideas WHERE userid = ? ORDER BY id DESC");
-		$stmt->bind_param("i", $_SESSION["userId"]);
-		$stmt->bind_result($idea, $color);
+		//$stmt = $mysqli->prepare("SELECT idea, color FROM vpuserideas WHERE userId = ?");
+		$stmt = $mysqli->prepare("SELECT id, idea, color FROM vpuserideas WHERE userId = ? AND deleted IS NULL ORDER BY id DESC");
+		$stmt->bind_param("i", $_SESSION["userId"] );
+		$stmt->bind_result($id, $idea, $color);
 		$stmt->execute();
 		while ($stmt->fetch()){
-			$ideasHTML .= '<p style="background-color: ' .$color .'">' .$idea ."</p> \n";
+			$ideasHTML .= '<p style="background-color: ' .$color .'">' .$idea .' | <a href="editusersideas.php?id=' .$id .'">Toimeta</a>' ."</p> \n";
+			//<pstyle="background-color: #ff2f2f">Kõik peavad rõõmust osa saama! </p>
+//<p style="background-color: #ff2f2f">Kõik peavad rõõmust osa saama! | <a href="editusersideas.php?id=17">Toimeta!</a></p>
 		}
 		$stmt->close();
 		$mysqli->close();
@@ -98,7 +100,7 @@
 	
 	function latestIdea(){
 		$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
-		$stmt = $mysqli->prepare("SELECT idea FROM vpuserideas WHERE id = (SELECT MAX(id) FROM vpuserideas)");
+		$stmt = $mysqli->prepare("SELECT idea FROM vpuserideas WHERE id =(SELECT MAX(id) FROM vpuserideas WHERE deleted IS NULL)");
 		$stmt->bind_result($idea);
 		$stmt->execute();
 		$stmt->fetch();
