@@ -5,7 +5,7 @@
 
 .leftLink
 {
-	text-align: left;
+	text-align: middle;
 }
 
 .rightLink
